@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f0f0f0;
+      }
+
+      #app {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
+
+      #timer-section {
+        margin-right: 50px;
+      }
+
+      #timer {
+        font-size: 3em;
+        margin-bottom: 20px;
+      }
+
+      #name {
+        font-size: 2em;
+        margin-bottom: 20px;
+      }
+
+      #list {
+        margin-left: 50px;
+      }
+
+      li {
+        font-size: 1.2em;
+      }
+
+      .current {
+        font-weight: bold;
+        color: red;
+      }
+
+      .completed {
+        color: grey;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div id="timer-section">
+        <div id="name"></div>
+        <div id="timer">1:00</div>
+        <button onclick="startTimer()">Start</button>
+        <button onclick="stopTimer()">Stop</button>
+        <button onclick="nextPerson()">Next</button>
+        <button onclick="randomizeOrder()">Randomize</button>
+        <form id="name-form">
+          <textarea
+            id="name-input"
+            placeholder="Enter names, separated by a newline"
+          ></textarea>
+          <button type="submit">Add Names</button>
+        </form>
+      </div>
+      <div id="list">
+        <ul id="name-list"></ul>
+      </div>
+    </div>
+
+    <script>
+      let countdown;
+      let currentNameIndex = 0;
+      const names = [];
+
+      document
+        .getElementById("name-form")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          let newNameText = document.getElementById("name-input").value;
+          if (newNameText) {
+            let newNameList = newNameText.split("\n");
+            newNameList.forEach((newName) => {
+              names.push(newName);
+            });
+            document.getElementById("name-input").value = "";
+            updateNameList();
+          }
+        });
+
+      function timer(seconds) {
+        clearInterval(countdown);
+
+        const now = Date.now();
+        const then = now + seconds * 1000;
+
+        countdown = setInterval(() => {
+          const secondsLeft = Math.round((then - Date.now()) / 1000);
+          if (secondsLeft < 0) {
+            clearInterval(countdown);
+            return;
+          }
+
+          document.getElementById("timer").textContent = `0:${
+            secondsLeft < 10 ? "0" : ""
+          }${secondsLeft}`;
+        }, 1000);
+      }
+
+      function startTimer() {
+        timer(60);
+      }
+
+      function stopTimer() {
+        clearInterval(countdown); // Stop the timer
+      }
+
+      function nextPerson() {
+        clearInterval(countdown);
+        document.getElementById("timer").textContent = "1:00";
+        currentNameIndex = (currentNameIndex + 1) % names.length;
+        updateNameList();
+        timer(60); // start the timer again
+      }
+
+      function randomizeOrder() {
+        names.sort(() => Math.random() - 0.5);
+        currentNameIndex = 0; // Reset the current index
+        document.getElementById("timer").textContent = "1:00";
+        clearInterval(countdown); // Stop the timer
+        updateNameList();
+      }
+
+      function updateNameList() {
+        let nameListElement = document.getElementById("name-list");
+        nameListElement.innerHTML = ""; // Clear existing list
+        names.forEach((name, index) => {
+          let li = document.createElement("li");
+          li.textContent = name;
+          if (index < currentNameIndex) {
+            li.classList.add("completed");
+          }
+          if (index === currentNameIndex) {
+            li.classList.add("current");
+            document.getElementById("name").textContent = name;
+          }
+          nameListElement.appendChild(li);
+        });
+      }
+    </script>
+  </body>
+</html>
